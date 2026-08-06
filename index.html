@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cetak label ke MARKLIFE P15 — Aset UHP</title>
+<style>
+:root{--nvy:#072B54;--org:#F97D05;--bg:#f6f6f8;--surf:#fff;--sep:#e3e3e8;
+ --lb1:#1a1a1a;--lb2:#5a5a63;--lb3:#8a8a94;--gr:#1B7F4B;--rd:#C0392B;--am:#9A6300}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--lb1);
+ font:14px/1.55 -apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif}
+.bar{background:var(--nvy);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.bar b{font-size:14px;letter-spacing:.02em}
+.bar span{color:#a9bdd4;font-size:12px}
+.wrap{max-width:1000px;margin:0 auto;padding:18px}
+.kartu{background:var(--surf);border:1px solid var(--sep);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:14px;margin:0 0 10px}
+.b{padding:9px 15px;border:1px solid var(--sep);background:var(--surf);border-radius:9px;
+ cursor:pointer;font-size:13.5px;font-weight:500}
+.b:hover{background:#f0f0f4}
+.b.utama{background:var(--nvy);color:#fff;border-color:var(--nvy)}
+.b.oranye{background:var(--org);color:#fff;border-color:var(--org)}
+.b:disabled{opacity:.45;cursor:not-allowed}
+.baris{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--lb2)}
+label.f input,label.f select{padding:6px 9px;border:1px solid var(--sep);border-radius:7px;font:inherit;font-size:13px}
+label.f input[type=number]{width:88px}
+.pratinjau{display:flex;gap:14px;flex-wrap:wrap;background:#ececed;border-radius:10px;padding:14px;min-height:80px}
+.pratinjau figure{margin:0;text-align:center}
+.pratinjau canvas{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);image-rendering:pixelated}
+.pratinjau figcaption{font-size:10.5px;color:var(--lb3);margin-top:4px;font-family:ui-monospace,monospace}
+#log{background:#12141a;color:#c8d3e0;border-radius:9px;padding:11px 13px;
+ font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11.5px;line-height:1.65;
+ max-height:260px;overflow:auto;white-space:pre-wrap}
+.tanda{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:600}
+.tanda.ok{background:#e6f4ec;color:var(--gr)}
+.tanda.no{background:#fdecea;color:var(--rd)}
+.tanda.tunggu{background:#fdf3e3;color:var(--am)}
+.catatan{font-size:12px;color:var(--lb2);line-height:1.6}
+.peringatan{background:#fdf3e3;border:1px solid #f3ddb4;color:var(--am);
+ border-radius:9px;padding:11px 13px;font-size:12.5px;line-height:1.6;margin-bottom:14px}
+progress{width:100%;height:8px}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>Cetak label ke MARKLIFE P15</b>
+  <span>Aset UHP · Upscale House Project</span>
+</div>
+
+<div class="wrap">
+  <div id="cekBrowser"></div>
+
+  <div class="kartu">
+    <h2>1 · Printer</h2>
+    <div class="baris">
+      <button class="b utama" id="sambung">Sambungkan printer</button>
+      <button class="b" id="putus" disabled>Putuskan</button>
+      <span id="statusPrinter" class="tanda no">Belum tersambung</span>
+    </div>
+    <p class="catatan" style="margin:10px 0 0">
+      Nyalakan P15, pastikan Bluetooth laptop aktif, lalu tekan Sambungkan dan pilih
+      perangkat bernama <b>P15…</b> di daftar yang muncul.
+    </p>
+  </div>
+
+  <div class="kartu">
+    <h2>2 · Ukuran dan hasil</h2>
+    <div class="baris">
+      <label class="f">Lebar label (mm)<input type="number" id="lebar" value="12" step="0.5" min="6" max="48"></label>
+      <label class="f">Panjang label (mm)<input type="number" id="tinggi" value="30" step="0.5" min="6" max="200"></label>
+      <label class="f">Margin (mm)<input type="number" id="margin" value="0.8" step="0.1" min="0" max="4"></label>
+      <label class="f">Kerapatan cetak<select id="dpi"><option value="203" selected>203 dpi</option><option value="300">300 dpi</option></select></label>
+      <label class="f">Ketebalan tinta<select id="pekat"><option value="1">Tipis</option><option value="2" selected>Sedang</option><option value="3">Tebal</option></select></label>
+      <label class="f">Jenis kertas<select id="kertas"><option value="celah" selected>Ada celah antar label</option><option value="menerus">Menerus</option></select></label>
+      <label class="f">Arah isi<select id="putar"><option value="1" selected>Memanjang</option><option value="0">Melintang</option></select></label>
+      <label class="f">Perataan hitam<select id="dither"><option value="0" selected>Tajam (ambang)</option><option value="1">Halus (dither)</option></select></label>
+    </div>
+    <p class="catatan" style="margin:10px 0 0">
+      Ubah angkanya lalu lihat pratinjau di bawah. Yang tampil di situ persis
+      titik-titik yang akan dikirim ke printer.
+    </p>
+  </div>
+
+  <div class="kartu">
+    <h2>3 · Pratinjau <span id="jml" style="color:var(--lb3);font-weight:400"></span></h2>
+    <div class="pratinjau" id="pratinjau"></div>
+  </div>
+
+  <div class="kartu">
+    <h2>4 · Cetak</h2>
+    <div class="baris">
+      <button class="b oranye" id="cetak" disabled>Cetak semua</button>
+      <button class="b" id="cetakSatu" disabled>Cetak satu (uji)</button>
+      <label class="f">Jeda antar label (detik)<input type="number" id="jedaLabel" value="1.5" step="0.5" min="0" max="10"></label>
+      <span id="kemajuan" class="catatan"></span>
+    </div>
+    <progress id="bar" value="0" max="1" style="margin-top:10px;display:none"></progress>
+  </div>
+
+  <div class="kartu">
+    <h2>Catatan proses <button class="b" id="rinci" style="float:right;padding:4px 10px;font-size:11.5px">Tampilkan rincian</button></h2>
+    <div id="log">Siap.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="protokol.js"></script>
+<script src="bluetooth.js"></script>
+<script src="label.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+let rinci = false;
+const logEl = $('#log');
+
+function catat(pesan, hanyaRinci) {
+  if (hanyaRinci && !rinci) return;
+  const jam = new Date().toLocaleTimeString('id-ID', {hour12:false});
+  logEl.textContent += '\n' + jam + '  ' + pesan;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+$('#rinci').onclick = () => {
+  rinci = !rinci;
+  $('#rinci').textContent = rinci ? 'Sembunyikan rincian' : 'Tampilkan rincian';
+  catat(rinci ? 'Rincian dinyalakan — setiap paket akan dicatat.' : 'Rincian dimatikan.');
+};
+
+/* ── Data label dari aplikasi ──────────────────────────────── */
+function bacaData() {
+  const h = location.hash || '';
+  const m = h.match(/(?:^#|&)d=([^&]+)/);
+  if (!m) return null;
+  try {
+    const json = decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/'))));
+    const o = JSON.parse(json);
+    return Array.isArray(o) ? o : (o.label || null);
+  } catch (e) {
+    catat('Data label tidak terbaca: ' + e.message);
+    return null;
+  }
+}
+
+let LABEL = bacaData();
+if (!LABEL || !LABEL.length) {
+  LABEL = [{ kode:'PRD-CAM-001', nama:'Contoh — Sony FX3', link:'https://upscalehouse.id/a/PRD-CAM-001' }];
+  catat('Tidak ada data dari aplikasi. Menampilkan satu label contoh.');
+} else {
+  catat(LABEL.length + ' label diterima dari Aset UHP.');
+}
+
+/* ── Cek dukungan browser ──────────────────────────────────── */
+(function cekBrowser() {
+  if (navigator.bluetooth) return;
+  $('#cekBrowser').innerHTML =
+    '<div class="peringatan"><b>Browser ini tidak mendukung Web Bluetooth.</b><br>' +
+    'Buka halaman ini di <b>Chrome</b> atau <b>Edge</b> di laptop Windows atau Mac. ' +
+    'Safari dan Firefox tidak mendukungnya, dan iPhone atau iPad tidak bisa sama sekali.</div>';
+  $('#sambung').disabled = true;
+})();
+
+/* ── Pratinjau ─────────────────────────────────────────────── */
+function konfigurasi() {
+  return {
+    lebarMm:  +$('#lebar').value || 12,
+    tinggiMm: +$('#tinggi').value || 30,
+    marginMm: +$('#margin').value || 0,
+    dpi:      +$('#dpi').value || 203,
+    putar:    $('#putar').value === '1',
+    porsiQR:  0.55
+  };
+}
+
+let KANVAS = [];
+function perbaruiPratinjau() {
+  const cfg = konfigurasi();
+  const wadah = $('#pratinjau');
+  wadah.innerHTML = '';
+  KANVAS = [];
+  const tampil = LABEL.slice(0, 24);
+  for (const l of tampil) {
+    const k = gambarLabel(l, cfg);
+    KANVAS.push(k);
+    const fig = document.createElement('figure');
+    const skala = Math.min(3, Math.max(1.4, 150 / k.height));
+    k.style.width = Math.round(k.width * skala) + 'px';
+    k.style.height = Math.round(k.height * skala) + 'px';
+    fig.appendChild(k);
+    const cap = document.createElement('figcaption');
+    cap.textContent = l.kode + '  ' + k.width + '×' + k.height + ' px';
+    fig.appendChild(cap);
+    wadah.appendChild(fig);
+  }
+  $('#jml').textContent = '· ' + LABEL.length + ' label' +
+    (LABEL.length > tampil.length ? ' (menampilkan ' + tampil.length + ' pertama)' : '');
+}
+
+['#lebar','#tinggi','#margin','#dpi','#putar'].forEach(s => {
+  $(s).addEventListener('input', perbaruiPratinjau);
+  $(s).addEventListener('change', perbaruiPratinjau);
+});
+perbaruiPratinjau();
+
+/* ── Printer ───────────────────────────────────────────────── */
+const printer = new Printer(catat);
+
+$('#sambung').onclick = async () => {
+  try {
+    $('#sambung').disabled = true;
+    const nama = await printer.sambung();
+    $('#statusPrinter').className = 'tanda ok';
+    $('#statusPrinter').textContent = 'Tersambung: ' + nama;
+    $('#putus').disabled = false;
+    $('#cetak').disabled = false;
+    $('#cetakSatu').disabled = false;
+  } catch (e) {
+    catat('Gagal menyambung: ' + e.message);
+    $('#statusPrinter').className = 'tanda no';
+    $('#statusPrinter').textContent = 'Gagal menyambung';
+    $('#sambung').disabled = false;
+  }
+};
+
+$('#putus').onclick = async () => {
+  await printer.putus();
+  $('#statusPrinter').className = 'tanda no';
+  $('#statusPrinter').textContent = 'Belum tersambung';
+  $('#sambung').disabled = false;
+  $('#putus').disabled = true;
+  $('#cetak').disabled = true;
+  $('#cetakSatu').disabled = true;
+};
+
+async function cetakDaftar(daftar) {
+  const cfg = konfigurasi();
+  const pilihan = {
+    kepekatan: +$('#pekat').value,
+    kertas: $('#kertas').value,
+    majuTitik: 100,
+    jeda: 30,
+    batasMs: 20000
+  };
+  const jedaLabel = (+$('#jedaLabel').value || 0) * 1000;
+  const bar = $('#bar');
+  bar.style.display = ''; bar.max = daftar.length; bar.value = 0;
+  $('#cetak').disabled = true; $('#cetakSatu').disabled = true;
+
+  let berhasil = 0;
+  try {
+    for (let i = 0; i < daftar.length; i++) {
+      const l = daftar[i];
+      $('#kemajuan').textContent = 'Mencetak ' + (i+1) + ' dari ' + daftar.length + ' — ' + l.kode;
+      catat('── Label ' + (i+1) + '/' + daftar.length + ': ' + l.kode);
+
+      const k = gambarLabel(l, cfg);
+      const gambar = k.getContext('2d').getImageData(0, 0, k.width, k.height);
+      const raster = keRaster(gambar, 128, $('#dither').value === '1');
+
+      const ok = await printer.cetakRaster(raster, pilihan);
+      if (ok) { berhasil++; catat('Printer mengonfirmasi selesai.'); }
+      else catat('Tidak ada konfirmasi dari printer — periksa hasil cetaknya.');
+
+      if (i < daftar.length - 1 && jedaLabel) await new Promise(r => setTimeout(r, jedaLabel));
+      bar.value = i + 1;
+    }
+    $('#kemajuan').textContent = 'Selesai — ' + berhasil + ' dari ' + daftar.length + ' dikonfirmasi printer.';
+    catat('Selesai. ' + berhasil + ' dari ' + daftar.length + ' label dikonfirmasi.');
+  } catch (e) {
+    catat('BERHENTI: ' + e.message);
+    $('#kemajuan').textContent = 'Berhenti: ' + e.message;
+  } finally {
+    $('#cetak').disabled = !printer.tersambung;
+    $('#cetakSatu').disabled = !printer.tersambung;
+  }
+}
+
+$('#cetak').onclick = () => cetakDaftar(LABEL);
+$('#cetakSatu').onclick = () => cetakDaftar(LABEL.slice(0, 1));
+</script>
+</body>
+</html>

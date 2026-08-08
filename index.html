@@ -132,23 +132,36 @@ $('#rinci').onclick = () => {
 function bacaData() {
   const h = location.hash || '';
   const m = h.match(/(?:^#|&)d=([^&]+)/);
-  if (!m) return null;
+  if (!m) return { label: null, cfg: null };
   try {
     const json = decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/'))));
     const o = JSON.parse(json);
-    return Array.isArray(o) ? o : (o.label || null);
+    if (Array.isArray(o)) return { label: o, cfg: null };
+    return { label: o.label || null, cfg: o.cfg || null };
   } catch (e) {
     catat('Data label tidak terbaca: ' + e.message);
-    return null;
+    return { label: null, cfg: null };
   }
 }
 
-let LABEL = bacaData();
+const DIBACA = bacaData();
+let LABEL = DIBACA.label;
 if (!LABEL || !LABEL.length) {
   LABEL = [{ kode:'PRD-CAM-001', nama:'Contoh — Sony FX3', link:'https://upscalehouse.id/a/PRD-CAM-001' }];
   catat('Tidak ada data dari aplikasi. Menampilkan satu label contoh.');
 } else {
   catat(LABEL.length + ' label diterima dari Aset UHP.');
+}
+
+/* Terapkan ukuran dari Aset UHP sebagai nilai awal — tetap bisa diubah manual */
+if (DIBACA.cfg) {
+  const c = DIBACA.cfg;
+  if (c.lebarMm)  $('#lebar').value  = c.lebarMm;
+  if (c.tinggiMm) $('#tinggi').value = c.tinggiMm;
+  if (c.marginMm !== undefined) $('#margin').value = c.marginMm;
+  if (c.dpi)      $('#dpi').value    = c.dpi;
+  if (c.kertas)   $('#kertas').value = c.kertas;
+  catat('Ukuran label diambil dari pengaturan Aset UHP: ' + c.lebarMm + '×' + c.tinggiMm + ' mm.');
 }
 
 /* ── Cek dukungan browser ──────────────────────────────────── */

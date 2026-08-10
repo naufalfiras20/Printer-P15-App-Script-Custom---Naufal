@@ -182,7 +182,8 @@ function konfigurasi() {
     marginMm: +$('#margin').value || 0,
     dpi:      +$('#dpi').value || 203,
     putar:    $('#putar').value === '1',
-    porsiQR:  0.55
+    porsiQR:  0.55,
+    tpl: (DIBACA && DIBACA.cfg && DIBACA.cfg.tpl) || null
   };
 }
 

@@ -88,15 +88,25 @@ function isiKeKanvas(kanvas, label, cfg, isiL, isiT, margin) {
   const lebarTeks = kanvas.width - margin - x;
   if (lebarTeks < 10) return;
 
-  const besarKode = Math.max(10, Math.round(isiT * 0.30));
-  const besarNama = Math.max(8, Math.round(isiT * 0.20));
-
-  let y = margin + Math.max(0, (isiT - (besarKode + besarNama * 2 + 6)) / 2);
-
+  const T = cfg.tpl || null;
+  const scl = cfg.dpi / 96;
+  const besarMerek = T ? Math.max(6, Math.round((T.fBrand || 10.5) * scl)) : 0;
+  const besarKode = T ? Math.max(8, Math.round((T.fKode || 15) * scl)) : Math.max(10, Math.round(isiT * 0.30));
+  const besarNama = T ? Math.max(6, Math.round((T.fNama || 11) * scl)) : Math.max(8, Math.round(isiT * 0.20));
+  const tampilMerek = T && T.brandOn !== false;
+  
+  let y = margin + Math.max(0, (isiT - ((tampilMerek ? besarMerek + 3 : 0) + besarKode + besarNama * 2 + 6)) / 2);
+  
+  if (tampilMerek) {
+   c.font = '700 ' + besarMerek + 'px -apple-system, system-ui, sans-serif';
+   c.fillText(potong(c, T.brand || 'Upscale House', lebarTeks), x, y);
+   y += besarMerek + 3;
+  }
+  
   c.font = '700 ' + besarKode + 'px ui-monospace, "SF Mono", Menlo, monospace';
   c.fillText(potong(c, label.kode || '', lebarTeks), x, y);
   y += besarKode + 3;
-
+  
   c.font = '500 ' + besarNama + 'px -apple-system, system-ui, sans-serif';
   const baris = bungkus(c, label.nama || '', lebarTeks, 2);
   for (const b of baris) { c.fillText(b, x, y); y += besarNama + 2; }

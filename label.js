@@ -99,7 +99,7 @@ function isiKeKanvas(kanvas, label, cfg, isiL, isiT, margin) {
      const scl = cfg.dpi / 96;
      const mmPx = mm => mmKePx(mm || 0, cfg.dpi);
 
-  const adaQR = !!label.link;
+  const adaQR = !!label.kode;
      const qrCfg = (E && E.qr) || {};
      // Jarak minimum dari tepi supaya QR tidak mepet — sebelumnya QR selalu
   // dibuat sebesar mungkin (nyaris = isiT) dan cuma bergantung pada
@@ -117,7 +117,7 @@ function isiKeKanvas(kanvas, label, cfg, isiL, isiT, margin) {
 
   let x = margin;
      if (adaQR) {
-            const kq = gambarQR(label.link, sisiQR);
+            const kq = gambarQR(label.kode, sisiQR);
             if (kq) {
                      c.drawImage(kq, qrX, qrY, sisiQR, sisiQR);
                      x = margin + qrPad + sisiQR + qrPad + Math.round(cfg.dpi / 25.4 * 1.2);

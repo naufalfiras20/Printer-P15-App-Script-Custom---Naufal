@@ -13,7 +13,7 @@ function gambarQR(teks, sisiPx) {
      try {
             new QRCode(wadah, {
                      text: teks, width: sisiPx, height: sisiPx,
-                     correctLevel: QRCode.CorrectLevel.Q,
+                     correctLevel: QRCode.CorrectLevel.L,
                      colorDark: '#000000', colorLight: '#ffffff'
             });
             const kanvas = wadah.querySelector('canvas');

@@ -90,14 +90,14 @@ class Printer {
     }
   }
 
-  /** Menunggu jatah kirim. Kalau macet lebih dari sedetik, paksa satu paket. */
+  /** Menunggu jatah kirim. Kalau macet lebih dari 3 detik, paksa satu paket. */
   async _tungguKredit() {
     if (this.kredit > 0) return;
     const mulai = Date.now();
     while (this.kredit <= 0) {
-      if (Date.now() - mulai > 1000) {
+      if (Date.now() - mulai > 3000) {
         this.kredit = 1;
-        this.catat('Jatah kirim tidak datang selama 1 detik — dipaksa 1.', true);
+        this.catat('Jatah kirim tidak datang selama 3 detik — dipaksa 1 (buffer printer mungkin masih penuh, cek hasil cetak).', true);
         return;
       }
       await new Promise(r => setTimeout(r, 10));

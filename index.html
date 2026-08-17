@@ -247,6 +247,23 @@ $('#putus').onclick = async () => {
   $('#cetakSatu').disabled = true;
 };
 
+/* Kalau tab/window pindah fokus saat cetak masal, browser bisa memutus
+   Bluetooth atau menahan layar tidur — dua-duanya bikin cetakan "berhenti"
+   di tengah jalan tanpa error yang jelas. sedangCetak + wake lock + sambung-
+   ulang otomatis di bawah ini menjaga supaya itu tidak terjadi. */
+let sedangCetak = false;
+let wakeLock = null;
+async function ambilWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (e) { catat('Wake lock layar tidak aktif: ' + e.message, true); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && sedangCetak && !wakeLock) ambilWakeLock();
+});
+
 async function cetakDaftar(daftar) {
   const cfg = konfigurasi();
   const pilihan = {
@@ -261,30 +278,53 @@ async function cetakDaftar(daftar) {
   bar.style.display = ''; bar.max = daftar.length; bar.value = 0;
   $('#cetak').disabled = true; $('#cetakSatu').disabled = true;
 
-  let berhasil = 0;
+  sedangCetak = true;
+  await ambilWakeLock();
+
+  let berhasil = 0, dilewati = 0;
   try {
     for (let i = 0; i < daftar.length; i++) {
       const l = daftar[i];
       $('#kemajuan').textContent = 'Mencetak ' + (i+1) + ' dari ' + daftar.length + ' — ' + l.kode;
       catat('── Label ' + (i+1) + '/' + daftar.length + ': ' + l.kode);
 
+      if (!await printer.pastikanTersambung()) {
+        catat('BERHENTI: printer terputus dan gagal disambung ulang.');
+        $('#kemajuan').textContent = 'Berhenti — printer terputus dan gagal disambung ulang.';
+        break;
+      }
+
       const k = gambarLabel(l, cfg);
       const gambar = k.getContext('2d').getImageData(0, 0, k.width, k.height);
       const raster = keRaster(gambar, 128, $('#dither').value === '1');
 
-      const ok = await printer.cetakRaster(raster, pilihan);
-      if (ok) { berhasil++; catat('Printer mengonfirmasi selesai.'); }
-      else catat('Tidak ada konfirmasi dari printer — periksa hasil cetaknya.');
+      let ok = false, sukses = false;
+      for (let percobaan = 0; percobaan < 2 && !sukses; percobaan++) {
+        try {
+          ok = await printer.cetakRaster(raster, pilihan);
+          sukses = true;
+        } catch (e) {
+          catat('Label ' + l.kode + ' gagal (' + e.message + ')' + (percobaan === 0 ? ' — mencoba ulang…' : ''));
+          if (percobaan === 0 && !await printer.pastikanTersambung()) break;
+        }
+      }
+
+      if (sukses && ok) { berhasil++; catat('Printer mengonfirmasi selesai.'); }
+      else if (sukses) catat('Tidak ada konfirmasi dari printer — periksa hasil cetaknya.');
+      else { dilewati++; catat('Label ' + l.kode + ' dilewati setelah 2 percobaan.'); }
 
       if (i < daftar.length - 1 && jedaLabel) await new Promise(r => setTimeout(r, jedaLabel));
       bar.value = i + 1;
     }
-    $('#kemajuan').textContent = 'Selesai — ' + berhasil + ' dari ' + daftar.length + ' dikonfirmasi printer.';
-    catat('Selesai. ' + berhasil + ' dari ' + daftar.length + ' label dikonfirmasi.');
+    $('#kemajuan').textContent = 'Selesai — ' + berhasil + ' dari ' + daftar.length + ' dikonfirmasi printer' +
+      (dilewati ? ', ' + dilewati + ' dilewati' : '') + '.';
+    catat('Selesai. ' + berhasil + ' dari ' + daftar.length + ' label dikonfirmasi' + (dilewati ? ', ' + dilewati + ' dilewati.' : '.'));
   } catch (e) {
     catat('BERHENTI: ' + e.message);
     $('#kemajuan').textContent = 'Berhenti: ' + e.message;
   } finally {
+    sedangCetak = false;
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
     $('#cetak').disabled = !printer.tersambung;
     $('#cetakSatu').disabled = !printer.tersambung;
   }

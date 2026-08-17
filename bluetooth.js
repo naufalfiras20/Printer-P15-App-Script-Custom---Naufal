@@ -45,6 +45,13 @@ class Printer {
       this.gatt = null;
     });
 
+    await this._pasangKarakteristik();
+    this.catat('Tersambung.');
+    return this.perangkat.name;
+  }
+
+  /** Ambil ulang service/characteristic setelah connect atau reconnect. */
+  async _pasangKarakteristik() {
     this.gatt = await this.perangkat.gatt.connect();
     const layanan = await this.gatt.getPrimaryService(UUID.layanan);
     this.tx = await layanan.getCharacteristic(UUID.tx);
@@ -64,8 +71,25 @@ class Printer {
       this.kredit = 1;
       this.catat('Printer belum memberi jatah kirim — mulai hati-hati dari 1.');
     }
-    this.catat('Tersambung.');
-    return this.perangkat.name;
+  }
+
+  /** Dipanggil sebelum tiap label saat cetak masal. Kalau printer sempat
+      terputus (mis. laptop pindah aplikasi/tab lalu Bluetooth-nya diputus
+      browser/OS), sambung ulang diam-diam tanpa perlu pemilih perangkat lagi —
+      selama objek this.perangkat masih ada, browser mengizinkan connect()
+      ulang tanpa gesture pengguna baru. */
+  async pastikanTersambung() {
+    if (this.tersambung) return true;
+    if (!this.perangkat) return false;
+    this.catat('Sambungan sempat putus — menyambung ulang…');
+    try {
+      await this._pasangKarakteristik();
+      this.catat('Tersambung ulang.');
+      return true;
+    } catch (e) {
+      this.catat('Gagal menyambung ulang: ' + e.message);
+      return false;
+    }
   }
 
   _terimaCx(e) {
